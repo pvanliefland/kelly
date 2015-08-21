@@ -5,16 +5,19 @@ from validators import ERROR_INVALID, ERROR_REQUIRED, regex
 class Property(object):
     """Base property class"""
 
-    def __init__(self, required=True, default=None, validators=None):
+    def __init__(self, required=True, default=None, validators=None, error_key=None):
         """Class constructor
 
         :param required
         :param default
+        :param validators
+        :param error_key
         """
 
         self.required = required
         self.default = default
         self.validators = validators if validators is not None else []
+        self.error_key = error_key
 
     def validate(self, value):
         """Validate the property against the provided value

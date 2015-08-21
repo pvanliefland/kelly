@@ -47,7 +47,8 @@ class Model(object):
             try:
                 property_instance.validate(property_value)
             except InvalidPropertyError as e:
-                errors[property_name] = e.error
+                error_key = property_instance.error_key if property_instance.error_key is not None else property_name
+                errors[error_key] = e.error
 
         if len(errors) > 0:
             raise InvalidModelError(errors)

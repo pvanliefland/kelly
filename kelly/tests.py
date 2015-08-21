@@ -256,7 +256,7 @@ def test_boolean_valid_1():
 class BlogPost(Model):
     id = Uuid(default=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
-    body = String(default=u'Lorem ipsum')
+    body = String(default=u'Lorem ipsum', error_key='text')
     tags = List(inner=String(validators=[min_length(3)]))
     meta_data = Dict(mapping={'author': String(), 'reviewer': String()})
     published = Boolean()
@@ -281,8 +281,8 @@ def test_model_invalid():
     assert cm.exception.errors['title'] == 'required'
     assert 'tags' in cm.exception.errors
     assert cm.exception.errors['tags'] == 'required'
-    assert 'body' in cm.exception.errors
-    assert cm.exception.errors['body'] == 'invalid'
+    assert 'text' in cm.exception.errors
+    assert cm.exception.errors['text'] == 'invalid'
     assert 'published' in cm.exception.errors
     assert cm.exception.errors['published'] == 'invalid'
     assert 'meta_data' in cm.exception.errors
