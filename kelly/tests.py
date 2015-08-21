@@ -135,7 +135,7 @@ def test_datetime_valid():
     """Should be ok"""
 
     test_datetime = DateTime()
-    test_datetime.validate(datetime.now)
+    test_datetime.validate(datetime.now())
 
     assert True
 
