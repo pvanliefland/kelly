@@ -1,6 +1,6 @@
 from uuid import uuid4
-from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, InvalidModelError, InvalidPropertyError, \
-    min_length, max_length, regex, choices
+from . import model, String, Integer, Uuid, DateTime, List, Dict, Boolean, InvalidModelError, InvalidPropertyError, \
+    min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
 
@@ -253,16 +253,22 @@ def test_boolean_valid_1():
     assert True
 
 
-class BlogPost(Model):
+@model
+class BlogPost(object):
     id = Uuid(default=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
     body = String(default=u'Lorem ipsum', error_key='text')
-    tags = List(inner=String(validators=[min_length(3)]))
     meta_data = Dict(mapping={'author': String(), 'reviewer': String()})
     published = Boolean()
     likes = Integer(required=False)
+    category = String(required=False)
+    tags = List(inner=String(validators=[min_length(3)]), error_key='category')
     created_on = DateTime(default=datetime.now)
     updated_on = DateTime(default=datetime.now)
+
+    @model_validator(error_key='category')
+    def category_or_tags(self):
+        assert self.tags is not None or self.category is not None, ERROR_REQUIRED
 
 
 def test_model_invalid():
@@ -279,8 +285,8 @@ def test_model_invalid():
     assert cm.exception.errors['id'] == 'invalid'
     assert 'title' in cm.exception.errors
     assert cm.exception.errors['title'] == 'required'
-    assert 'tags' in cm.exception.errors
-    assert cm.exception.errors['tags'] == 'required'
+    assert 'category' in cm.exception.errors
+    assert cm.exception.errors['category'] == 'required'
     assert 'text' in cm.exception.errors
     assert cm.exception.errors['text'] == 'invalid'
     assert 'published' in cm.exception.errors
