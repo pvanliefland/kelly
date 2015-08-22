@@ -1,10 +1,13 @@
-from properties import Property, InvalidPropertyError
-
-ERROR_EXTRA = 'extra'
+from errors import ERROR_EXTRA
+from properties import InvalidPropertyError, Property
+from base import Model
 
 
 def model(model_cls):
-    """Model class decorator"""
+    """Model class decorator
+
+    :rtype: kelly.Model
+    """
 
     model_properties = {}
     model_validators = []
@@ -16,11 +19,11 @@ def model(model_cls):
         elif isinstance(member_value, ModelValidator):  # Model validators setup
             model_validators.append(member_value)
 
-    class Model(model_cls):
+    class InnerModel(model_cls, Model):
         """Dynamic base model class"""
 
         def __new__(cls, **kwargs):
-            model_instance = super(Model, cls).__new__(cls)
+            model_instance = super(InnerModel, cls).__new__(cls)
 
             # Loop over properties and fetch a valud (provided or default)
             for property_name in model_properties:
@@ -62,7 +65,7 @@ def model(model_cls):
             if len(errors) > 0:
                 raise InvalidModelError(errors)
 
-    return Model
+    return InnerModel
 
 
 class ModelValidator(object):

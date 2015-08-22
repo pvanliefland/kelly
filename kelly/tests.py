@@ -1,6 +1,6 @@
 from uuid import uuid4
-from . import model, String, Integer, Uuid, DateTime, List, Dict, Boolean, InvalidModelError, InvalidPropertyError, \
-    min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
+from . import model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
+    InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
 
@@ -254,15 +254,21 @@ def test_boolean_valid_1():
 
 
 @model
+class Author(object):
+    name = String()
+
+
+@model
 class BlogPost(object):
     id = Uuid(default=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
     body = String(default=u'Lorem ipsum', error_key='text')
-    meta_data = Dict(mapping={'author': String(), 'reviewer': String()})
+    meta_data = Dict(mapping={'corrector': String(), 'reviewer': String()})
     published = Boolean()
     likes = Integer(required=False)
     category = String(required=False)
     tags = List(inner=String(validators=[min_length(3)]), error_key='category')
+    author = Object(object_class=Author)
     created_on = DateTime(default=datetime.now)
     updated_on = DateTime(default=datetime.now)
 
@@ -280,11 +286,13 @@ def test_model_invalid():
         test_blog_spot.validate()
 
     assert isinstance(cm.exception.errors, dict)
-    assert len(cm.exception.errors) == 6
+    assert len(cm.exception.errors) == 7
     assert 'id' in cm.exception.errors
     assert cm.exception.errors['id'] == 'invalid'
     assert 'title' in cm.exception.errors
     assert cm.exception.errors['title'] == 'required'
+    assert 'author' in cm.exception.errors
+    assert cm.exception.errors['author'] == 'required'
     assert 'category' in cm.exception.errors
     assert cm.exception.errors['category'] == 'required'
     assert 'text' in cm.exception.errors
@@ -299,7 +307,7 @@ def test_model_valid():
     """Valid model"""
 
     test_blog_spot = BlogPost(title=u'Hello world !', tags=[u'foo', u'bar'], published=True, likes=8,
-                              meta_data={'author': 'Pierre', 'reviewer': 'Moinax'})
+                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=Author(name='Pierre'))
     test_blog_spot.validate()
 
     assert test_blog_spot.body == u'Lorem ipsum'

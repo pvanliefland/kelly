@@ -1,5 +1,7 @@
 from datetime import datetime
-from validators import ERROR_INVALID, ERROR_REQUIRED, regex
+from errors import ERROR_INVALID, ERROR_REQUIRED
+from validators import regex
+from base import Model
 
 
 class Property(object):
@@ -133,6 +135,21 @@ class Boolean(Property):
 
     def do_validate(self, value):
         assert value in [True, False], ERROR_INVALID
+
+
+class Object(Property):
+    """Object property"""
+
+    def __init__(self, object_class=None, **kwargs):
+        super(Object, self).__init__(**kwargs)
+
+        self.object_class = object if object_class is None else object_class
+
+    def do_validate(self, value):
+        assert isinstance(value, self.object_class), ERROR_INVALID
+
+        if isinstance(value, Model):
+            value.validate()
 
 
 class InvalidPropertyError(Exception):
