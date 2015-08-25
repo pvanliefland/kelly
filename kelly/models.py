@@ -71,7 +71,7 @@ class Model(BaseModel):
 
         # Call model validators
         for validator in self._model_validators:
-            if validator.error_key in errors:
+            if not validator.error_key in errors:
                 try:
                     validator(self)
                 except AssertionError as e:
