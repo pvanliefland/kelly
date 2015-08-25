@@ -253,6 +253,13 @@ def test_boolean_valid_1():
     assert True
 
 
+def test_uuid_default():
+    """None should be the default"""
+
+    test_uuid = Uuid()
+    assert test_uuid.default_value is None
+
+
 class Author(Model):
     name = String()
 

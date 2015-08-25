@@ -86,7 +86,7 @@ class Uuid(String):
 
     @property
     def default_value(self):
-        return unicode(super(Uuid, self).default_value)
+        return None if self.default is None else unicode(super(Uuid, self).default_value)
 
 
 class List(Property):
