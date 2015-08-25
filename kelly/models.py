@@ -1,6 +1,7 @@
-from errors import ERROR_EXTRA
+from errors import ERROR_EXTRA, InvalidModelError
 from properties import InvalidPropertyError, Property
 from base import Model
+from validators import ModelValidator
 
 
 def model(model_cls):
@@ -66,31 +67,3 @@ def model(model_cls):
                 raise InvalidModelError(errors)
 
     return InnerModel
-
-
-class ModelValidator(object):
-    """Model validators decorate model methods so that they are automatically called when validating the model."""
-
-    def __init__(self, validator_function, error_key):
-        self.validator_function = validator_function
-        self.error_key = error_key
-
-    def __call__(self, *args, **kwargs):
-        return self.validator_function(*args, **kwargs)
-
-
-def model_validator(error_key):
-    """Model validator decorator
-
-    :param error_key
-    """
-
-    def decorator(f):
-        return ModelValidator(f, error_key)
-
-    return decorator
-
-
-class InvalidModelError(Exception):
-    def __init__(self, errors):
-        self.errors = errors

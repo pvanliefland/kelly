@@ -1,5 +1,5 @@
 from datetime import datetime
-from errors import ERROR_INVALID, ERROR_REQUIRED
+from errors import ERROR_INVALID, ERROR_REQUIRED, InvalidPropertyError
 from validators import regex
 from base import Model
 
@@ -150,10 +150,3 @@ class Object(Property):
 
         if isinstance(value, Model):
             value.validate()
-
-
-class InvalidPropertyError(Exception):
-    """Exception raised whenever an attempt is made to validate an invalid value"""
-
-    def __init__(self, error):
-        self.error = error
