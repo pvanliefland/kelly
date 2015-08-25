@@ -71,10 +71,11 @@ class Model(BaseModel):
 
         # Call model validators
         for validator in self._model_validators:
-            try:
-                validator(self)
-            except AssertionError as e:
-                errors[validator.error_key] = e.message
+            if validator.error_key in errors:
+                try:
+                    validator(self)
+                except AssertionError as e:
+                    errors[validator.error_key] = e.message
 
         if len(errors) > 0:
             raise InvalidModelError(errors)
