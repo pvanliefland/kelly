@@ -1,5 +1,5 @@
 from uuid import uuid4
-from . import model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
+from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
     InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
@@ -253,13 +253,11 @@ def test_boolean_valid_1():
     assert True
 
 
-@model
-class Author(object):
+class Author(Model):
     name = String()
 
 
-@model
-class BlogPost(object):
+class BlogPost(Model):
     id = Uuid(default=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
     body = String(default=u'Lorem ipsum', error_key='text')
