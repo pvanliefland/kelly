@@ -31,19 +31,27 @@ class Property(object):
             if value is None and self.required:
                 assert value is not None, ERROR_REQUIRED
             elif value is not None:
-                self.do_validate(value)
+                self._do_validate(value)
                 for validator in self.validators:
                     validator(value)
         except AssertionError as e:
             raise InvalidPropertyError(e.message)
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         """This method should be implemented in child classes and perform the type-specific validation
 
         :param value
         """
 
         raise NotImplementedError()
+
+    def to_dict(self, value):
+        """Prepare the valeu for a model dict representation
+
+        :param value: the property value
+        """
+
+        return value
 
     @property
     def default_value(self):
@@ -58,21 +66,21 @@ class Property(object):
 class String(Property):
     """String property"""
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, basestring), ERROR_INVALID
 
 
 class Integer(Property):
     """String property"""
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, int), ERROR_INVALID
 
 
 class DateTime(Property):
     """DateTime property"""
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, datetime), ERROR_INVALID
 
 
@@ -97,7 +105,7 @@ class List(Property):
 
         self.inner = inner
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, list), ERROR_INVALID
 
         if self.inner is not None:
@@ -106,6 +114,9 @@ class List(Property):
                     self.inner.validate(single_value)
             except AssertionError:
                 raise AssertionError(ERROR_INVALID)
+
+    def to_dict(self, value):
+        return [dict(item) if isinstance(value, Model) else item for item in value]
 
 
 class Dict(Property):
@@ -116,7 +127,7 @@ class Dict(Property):
 
         self.mapping = mapping
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, dict), ERROR_INVALID
 
         if self.mapping is not None:
@@ -129,11 +140,14 @@ class Dict(Property):
             except (AssertionError, InvalidPropertyError):
                 raise AssertionError(ERROR_INVALID)
 
+    def to_dict(self, value):
+        return dict(value) if isinstance(value, Model) else value
+
 
 class Boolean(Property):
     """Boolean property"""
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert value in [True, False], ERROR_INVALID
 
 
@@ -145,7 +159,7 @@ class Object(Property):
 
         self.object_class = object if object_class is None else object_class
 
-    def do_validate(self, value):
+    def _do_validate(self, value):
         assert isinstance(value, self.object_class), ERROR_INVALID
 
         if isinstance(value, Model):

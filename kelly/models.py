@@ -85,7 +85,7 @@ class Model(BaseModel):
 
         casted = []
 
-        for property_name in self._model_properties:
-            casted.append((property_name, getattr(self, property_name)))
+        for property_name, property_instance in self._model_properties.iteritems():
+            casted.append((property_name, property_instance.to_dict(getattr(self, property_name))))
 
         return iter(casted)
