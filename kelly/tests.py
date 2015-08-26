@@ -350,3 +350,7 @@ def test_model_to_dict():
     for revision in test_blog_spot_dict['revisions']:
         assert isinstance(revision, dict)
 
+    # Check an object
+    assert 'author' in test_blog_spot_dict
+    assert isinstance(test_blog_spot_dict['author'], dict)
+

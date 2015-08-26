@@ -140,9 +140,6 @@ class Dict(Property):
             except (AssertionError, InvalidPropertyError):
                 raise AssertionError(ERROR_INVALID)
 
-    def to_dict(self, value):
-        return dict(value) if isinstance(value, Model) else value
-
 
 class Boolean(Property):
     """Boolean property"""
@@ -164,3 +161,6 @@ class Object(Property):
 
         if isinstance(value, Model):
             value.validate()
+
+    def to_dict(self, value):
+        return dict(value) if isinstance(value, Model) else value
