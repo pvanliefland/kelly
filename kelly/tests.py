@@ -281,6 +281,11 @@ class BlogPost(Model):
     def category_or_tags(self):
         assert self.tags is not None or self.category is not None, ERROR_REQUIRED
 
+    def __init__(self, **kwargs):
+        super(BlogPost, self).__init__(**kwargs)
+
+        self.foo = "bar"
+
 
 def test_model_invalid():
     """Invalid model"""
@@ -316,3 +321,14 @@ def test_model_valid():
     test_blog_spot.validate()
 
     assert test_blog_spot.body == u'Lorem ipsum'
+
+
+def test_model_to_dict():
+    """Test dict casting"""
+
+    test_blog_spot = BlogPost(title=u'Hello world !', tags=[u'foo', u'bar'], published=True, likes=8,
+                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=Author(name='Pierre'))
+    test_blog_spot_dict = dict(test_blog_spot)
+
+    assert isinstance(test_blog_spot_dict, dict)
+    assert len(test_blog_spot_dict) == 11

@@ -79,3 +79,13 @@ class Model(BaseModel):
 
         if len(errors) > 0:
             raise InvalidModelError(errors)
+
+    def __iter__(self):
+        """Allow dict casting"""
+
+        casted = []
+
+        for property_name in self._model_properties:
+            casted.append((property_name, getattr(self, property_name)))
+
+        return iter(casted)
