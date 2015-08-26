@@ -116,7 +116,7 @@ class List(Property):
                 raise AssertionError(ERROR_INVALID)
 
     def to_dict(self, value):
-        return [dict(item) if isinstance(value, Model) else item for item in value]
+        return None if value is None else [dict(item) if isinstance(item, Model) else item for item in value]
 
 
 class Dict(Property):

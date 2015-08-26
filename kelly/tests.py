@@ -264,6 +264,11 @@ class Author(Model):
     name = String()
 
 
+class Revision(Model):
+    id = Uuid(default=uuid4)
+    changes = String(default='Fake changes LOL')
+
+
 class BlogPost(Model):
     id = Uuid(default=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
@@ -276,6 +281,7 @@ class BlogPost(Model):
     author = Object(object_class=Author)
     created_on = DateTime(default=datetime.now)
     updated_on = DateTime(default=datetime.now)
+    revisions = List(required=False, inner=Object(object_class=Revision))
 
     @model_validator(error_key='category')
     def category_or_tags(self):
@@ -327,8 +333,20 @@ def test_model_to_dict():
     """Test dict casting"""
 
     test_blog_spot = BlogPost(title=u'Hello world !', tags=[u'foo', u'bar'], published=True, likes=8,
-                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=Author(name='Pierre'))
+                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=Author(name='Pierre'),
+                              revisions=[Revision(), Revision()])
     test_blog_spot_dict = dict(test_blog_spot)
 
     assert isinstance(test_blog_spot_dict, dict)
-    assert len(test_blog_spot_dict) == 11
+    assert len(test_blog_spot_dict) == 12
+
+    # Check a string
+    assert 'title' in test_blog_spot_dict
+    assert isinstance(test_blog_spot_dict['title'], unicode)
+
+    # Check a list
+    assert 'revisions' in test_blog_spot_dict
+    assert isinstance(test_blog_spot_dict['revisions'], list)
+    for revision in test_blog_spot_dict['revisions']:
+        assert isinstance(revision, dict)
+
