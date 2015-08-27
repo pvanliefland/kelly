@@ -450,3 +450,11 @@ def test_model_from_dict():
     # Check an object
     assert hasattr(test_blog_spot, 'author')
     assert isinstance(test_blog_spot.author, Author)
+
+def test_model_inheritance():
+    """Hilarious blog posts have 13 properties"""
+
+    class HilariousBlogPost(BlogPost):
+        lol = String()
+
+    assert len(HilariousBlogPost._model_properties) == 13

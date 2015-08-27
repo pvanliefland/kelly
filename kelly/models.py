@@ -19,7 +19,12 @@ class ModelMeta(type):
     def __new__(mcs, name, bases, dct):
         cls = type.__new__(mcs, name, bases, dct)
         if BaseModel not in bases:  # We don't want to call __model_init__ when building Model itself
+            cls._model_properties = {}
+            cls._model_validators = []
             cls.__model_init__.im_func(cls, dct)
+
+            for base in [base for base in bases if issubclass(base, Model) and not base is Model]:
+                base.__model_init__.im_func(cls, dict(base.__dict__))
 
         return cls
 
@@ -33,13 +38,9 @@ class Model(BaseModel):
     def __model_init__(cls, dct):
         """Initialize the model class"""
 
-        cls._model_properties = {}
-        cls._model_validators = []
-
         for member_name, member_value in dct.items():
             if isinstance(member_value, BaseProperty):  # Properties setup
                 cls._model_properties[member_name] = member_value
-                del dct[member_name]
             elif isinstance(member_value, ModelValidator):  # Model validators setup
                 cls._model_validators.append(member_value)
 

@@ -12,6 +12,9 @@ Base model & property classes.
 class Model(object):
     """Base model class - only used to provide a signature"""
 
+    _model_properties = {}
+    _model_validators = []
+
     def __new__(cls, **kwargs):
         return super(Model, cls).__new__(cls)
 
