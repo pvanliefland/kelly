@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+kelly.tests
+~~~~~~~~~~~
+
+Unit tests.
+
+"""
+
 from uuid import uuid4
 from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
     InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
@@ -95,9 +105,9 @@ def test_string_valid_1():
 def test_string_default():
     """Test property default values"""
 
-    test_string = String(default="bar")
+    test_string = String(default_value="bar")
 
-    assert test_string.default_value == "bar"
+    assert test_string.default == "bar"
 
 
 def test_integer_invalid_1():
@@ -191,6 +201,17 @@ def test_list_valid_2():
     assert True
 
 
+def test_list_default_mutable():
+    """Mutating the property default value after providing it should not result in an altered default"""
+
+    default_list = []
+    test_list = List(property_class=String(), default_value=default_list)
+
+    default_list.append('foo')
+
+    assert test_list.default == []
+
+
 def test_dict_invalid_1():
     """Wrong type"""
 
@@ -233,6 +254,17 @@ def test_dict_valid_1():
     assert True
 
 
+def test_dict_default_mutable():
+    """Mutating the property default value after providing it should not result in an altered default"""
+
+    default_dict = {}
+    test_dict = Dict(default_value=default_dict)
+
+    default_dict['foo'] = 'bar'
+
+    assert test_dict.default == {}
+
+
 def test_boolean_invalid():
     """3 is boolean"""
 
@@ -257,7 +289,47 @@ def test_uuid_default():
     """None should be the default"""
 
     test_uuid = Uuid()
-    assert test_uuid.default_value is None
+    assert test_uuid.default is None
+
+
+def test_object_invalid_1():
+    """Wrong type"""
+
+    class Foo(Model):
+        bar = String()
+
+    test_object = Object(model_class=Foo)
+
+    with assert_raises(InvalidPropertyError) as cm:
+        test_object.validate("foo")
+
+    assert cm.exception.error == 'invalid'
+
+
+def test_object_valid_1():
+    """Should be ok"""
+
+    class Foo(Model):
+        bar = String()
+
+    test_object = Object(model_class=Foo)
+    test_object.validate(Foo(bar="baz"))
+
+    assert True
+
+
+def test_object_default_mutable():
+    """Mutating the property default value after providing it should not result in an altered default"""
+
+    class Foo(Model):
+        bar = String()
+
+    default_object = Foo(bar="baz")
+    test_object = Object(model_class=Foo, default_value=default_object)
+
+    default_object.bar = "foo"
+
+    assert test_object.default.bar == "baz"
 
 
 class Author(Model):
@@ -265,22 +337,22 @@ class Author(Model):
 
 
 class Revision(Model):
-    id = Uuid(default=uuid4)
-    changes = String(default='Fake changes LOL')
+    id = Uuid(default_value=uuid4)
+    changes = String(default_value='Fake changes LOL')
 
 
 class BlogPost(Model):
-    id = Uuid(default=uuid4)
+    id = Uuid(default_value=uuid4)
     title = String(validators=[min_length(3), max_length(100), regex(r'^([A-Za-z0-9- !.]*)$')])
-    body = String(default=u'Lorem ipsum', error_key='text')
+    body = String(default_value=u'Lorem ipsum', error_key='text')
     meta_data = Dict(mapping={'corrector': String(), 'reviewer': String()})
     published = Boolean()
     likes = Integer(required=False)
     category = String(required=False)
     tags = List(property_class=String(validators=[min_length(3)]), error_key='category')
     author = Object(model_class=Author)
-    created_on = DateTime(default=datetime.now)
-    updated_on = DateTime(default=datetime.now)
+    created_on = DateTime(default_value=datetime.now)
+    updated_on = DateTime(default_value=datetime.now)
     revisions = List(required=False, property_class=Object(model_class=Revision))
 
     @model_validator(error_key='category')
@@ -359,8 +431,8 @@ def test_model_from_dict():
     """Test model instantiation through the froM_dict() method."""
 
     test_blog_spot_data = dict(title=u'Hello world !', tags=[u'foo', u'bar'], published=True, likes=8,
-                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=dict(name='Pierre'),
-                              revisions=[dict(), dict()])
+                               meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=dict(name='Pierre'),
+                               revisions=[dict(), dict()])
     test_blog_spot = BlogPost.from_dict(test_blog_spot_data)
 
     assert isinstance(test_blog_spot, BlogPost)
@@ -378,4 +450,3 @@ def test_model_from_dict():
     # Check an object
     assert hasattr(test_blog_spot, 'author')
     assert isinstance(test_blog_spot.author, Author)
-

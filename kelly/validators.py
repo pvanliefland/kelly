@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+kelly.validators
+~~~~~~~~~~~~~~~~
+
+Property/model validators.
+
+"""
+
 import re
 
 ERROR_INVALID = 'invalid'

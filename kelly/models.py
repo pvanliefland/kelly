@@ -1,6 +1,15 @@
-from errors import ERROR_EXTRA, InvalidModelError
-from properties import InvalidPropertyError, Property
-from base import Model as BaseModel
+# -*- coding: utf-8 -*-
+
+"""
+kelly.models
+~~~~~~~~~~~~
+
+Model class/metaclass.
+
+"""
+
+from errors import ERROR_EXTRA, InvalidModelError, InvalidPropertyError
+from base import Model as BaseModel, Property as BaseProperty
 from validators import ModelValidator
 
 
@@ -28,7 +37,7 @@ class Model(BaseModel):
         cls._model_validators = []
 
         for member_name, member_value in dct.items():
-            if isinstance(member_value, Property):  # Properties setup
+            if isinstance(member_value, BaseProperty):  # Properties setup
                 cls._model_properties[member_name] = member_value
                 del dct[member_name]
             elif isinstance(member_value, ModelValidator):  # Model validators setup
@@ -44,7 +53,7 @@ class Model(BaseModel):
             if property_name in kwargs:
                 property_value = kwargs.pop(property_name)
             else:
-                property_value = property_instance.default_value
+                property_value = property_instance.default
 
             setattr(model_instance, property_name, property_value)
 

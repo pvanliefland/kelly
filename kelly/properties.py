@@ -1,13 +1,24 @@
+# -*- coding: utf-8 -*-
+
+"""
+kelly.properties
+~~~~~~~~~~~~~~~~
+
+Property classes.
+
+"""
+
 from datetime import datetime
 from errors import ERROR_INVALID, ERROR_REQUIRED, InvalidPropertyError
 from validators import regex
-from base import Model
+from base import Model as BaseModel, Property as BaseProperty
+from copy import copy
 
 
-class Property(object):
+class Property(BaseProperty):
     """Base property class"""
 
-    def __init__(self, required=True, default=None, validators=None, error_key=None):
+    def __init__(self, required=True, default_value=None, validators=None, error_key=None):
         """Class constructor
 
         :param required
@@ -17,7 +28,7 @@ class Property(object):
         """
 
         self.required = required
-        self.default = default
+        self.default_value = default_value if callable(default_value) else copy(default_value)
         self.validators = validators if validators is not None else []
         self.error_key = error_key
 
@@ -62,11 +73,11 @@ class Property(object):
         return value
 
     @property
-    def default_value(self):
+    def default(self):
         try:
-            default_value = self.default()
+            default_value = self.default_value()
         except TypeError:
-            default_value = self.default
+            default_value = copy(self.default_value)
 
         return default_value
 
@@ -95,14 +106,14 @@ class DateTime(Property):
 class Uuid(String):
     """UUID property"""
 
-    def __init__(self, required=True, default=None, validators=None):
-        super(Uuid, self).__init__(required, default, validators)
+    def __init__(self, required=True, default_value=None, validators=None):
+        super(Uuid, self).__init__(required, default_value, validators)
 
         self.validators.append(regex(r'\A[0-9a-f-]{36}\Z'))
 
     @property
-    def default_value(self):
-        return None if self.default is None else unicode(super(Uuid, self).default_value)
+    def default(self):
+        return None if self.default_value is None else unicode(super(Uuid, self).default)
 
 
 class List(Property):
@@ -127,7 +138,7 @@ class List(Property):
         if value is None or self.property_class is None:
             return value
 
-        return [dict(item) if isinstance(item, Model) else item for item in value]
+        return [dict(item) if isinstance(item, BaseModel) else item for item in value]
 
     def from_dict(self, value):
         if value is None or self.property_class is None:
@@ -176,7 +187,7 @@ class Object(Property):
     def _do_validate(self, value):
         assert isinstance(value, self.model_class), ERROR_INVALID
 
-        if isinstance(value, Model):
+        if isinstance(value, BaseModel):
             value.validate()
 
     def to_dict(self, value):

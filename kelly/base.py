@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+
+""""
+kelly.base
+~~~~~~~~~~
+
+Base model & property classes.
+
+"""
+
+
 class Model(object):
     """Base model class - only used to provide a signature"""
 
@@ -9,3 +20,9 @@ class Model(object):
 
     def validate(self):
         pass
+
+
+class Property(object):
+    """Base property class - only used to provide a signature"""
+
+    pass

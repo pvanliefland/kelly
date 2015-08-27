@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+kelly.errors
+~~~~~~~~~~~~
+
+Error codes & exception classes.
+
+"""
+
 ERROR_INVALID = 'invalid'
 ERROR_REQUIRED = 'required'
 ERROR_EXTRA = 'extra'
