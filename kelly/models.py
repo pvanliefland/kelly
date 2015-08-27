@@ -23,11 +23,7 @@ class ModelMeta(type):
             cls._model_validators = []
 
             # Parse properties for the model class itself (those do not include parent classes properties)
-            cls.__model_init__.im_func(cls, None, dct)
-
-            # Parse properties for the base classes (if they are proper Kelly models)
-            for base in [base for base in bases if issubclass(base, Model) and not base is Model]:
-                base.__model_init__.im_func(cls, base, base._model_properties)
+            cls.__model_init__.im_func(cls, bases, dct)
 
         return cls
 
@@ -38,18 +34,22 @@ class Model(BaseModel):
     __metaclass__ = ModelMeta
 
     @classmethod
-    def __model_init__(cls, base, dct):
+    def __model_init__(cls, bases, dct, delete_attr=True):
         """Initialize the model class"""
 
         for candidate_name, candidate_value in dct.items():
             if isinstance(candidate_value, BaseProperty):  # Properties setup
                 cls._model_properties[candidate_name] = candidate_value
-                if base is None:
+                if delete_attr:
                     delattr(cls, candidate_name)
             elif isinstance(candidate_name, ModelValidator):  # Model validators setup
                 cls._model_validators.append(candidate_value)
-                if base is None:
+                if delete_attr:
                     delattr(cls, candidate_name)
+
+        # Parse properties for the base classes (if they are proper Kelly models)
+        for base in [base for base in bases if issubclass(base, Model) and not base is Model]:
+            base.__model_init__.im_func(cls, base.__bases__, base._model_properties, False)
 
     def __new__(cls, **kwargs):
         """Provide a default constructor to model classes"""

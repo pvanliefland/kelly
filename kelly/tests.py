@@ -13,6 +13,7 @@ from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Objec
     InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
+from kelly.properties import Constant
 
 
 def test_string_invalid_1():
@@ -351,6 +352,39 @@ def test_object_default_mutable():
     default_object.bar = "foo"
 
     assert test_object.default.bar == "baz"
+
+
+def test_constant_invalid_1():
+    """2 is invalid"""
+
+    test_constant = Constant(value=1)
+
+    with assert_raises(InvalidPropertyError) as cm:
+        test_constant.validate(2)
+
+    assert cm.exception.error == 'invalid'
+
+
+def test_constant_invalid_2():
+    """Cannot set value to constant properties"""
+
+    test_constant = Constant(value=1)
+
+    class Foo(Model):
+        bar = test_constant
+
+    with assert_raises(ValueError):
+        Foo(bar=2)
+
+
+def test_constant_valid_1():
+    """Should be ok"""
+
+    test_constant = Constant(value=1)
+
+    test_constant.validate(1)
+
+    assert test_constant.default == 1
 
 
 class Author(Model):

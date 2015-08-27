@@ -224,3 +224,27 @@ class Object(Property):
             return None
 
         return self.model_class(**value)
+
+
+class Constant(Property):
+    """Constant property"""
+
+    def __init__(self, value, **kwargs):
+        super(Constant, self).__init__(**kwargs)
+
+        self.value = value
+
+    def process_value(self, value):
+        raise ValueError('Cannot set value of Constant properties')
+
+    @property
+    def default(self):
+        return self.value
+
+    def _do_validate(self, value):
+        assert value == self.value, ERROR_INVALID
+
+
+
+
+
