@@ -46,9 +46,17 @@ class Property(object):
         raise NotImplementedError()
 
     def to_dict(self, value):
-        """Prepare the valeu for a model dict representation
+        """Prepare the value for a model dict representation
 
-        :param value: the property value
+        :param value
+        """
+
+        return value
+
+    def from_dict(self, value):
+        """Prepare the value from a model dict representation
+
+        :param value
         """
 
         return value
@@ -100,23 +108,32 @@ class Uuid(String):
 class List(Property):
     """String property"""
 
-    def __init__(self, inner=None, **kwargs):
+    def __init__(self, property_class=None, **kwargs):
         super(List, self).__init__(**kwargs)
 
-        self.inner = inner
+        self.property_class = property_class
 
     def _do_validate(self, value):
         assert isinstance(value, list), ERROR_INVALID
 
-        if self.inner is not None:
+        if self.property_class is not None:
             try:
                 for single_value in value:
-                    self.inner.validate(single_value)
+                    self.property_class.validate(single_value)
             except AssertionError:
                 raise AssertionError(ERROR_INVALID)
 
     def to_dict(self, value):
-        return None if value is None else [dict(item) if isinstance(item, Model) else item for item in value]
+        if value is None or self.property_class is None:
+            return value
+
+        return [dict(item) if isinstance(item, Model) else item for item in value]
+
+    def from_dict(self, value):
+        if value is None or self.property_class is None:
+            return value
+
+        return [self.property_class.model_class(**item) if isinstance(item, dict) else item for item in value]
 
 
 class Dict(Property):
@@ -151,16 +168,22 @@ class Boolean(Property):
 class Object(Property):
     """Object property"""
 
-    def __init__(self, object_class=None, **kwargs):
+    def __init__(self, model_class, **kwargs):
         super(Object, self).__init__(**kwargs)
 
-        self.object_class = object if object_class is None else object_class
+        self.model_class = model_class
 
     def _do_validate(self, value):
-        assert isinstance(value, self.object_class), ERROR_INVALID
+        assert isinstance(value, self.model_class), ERROR_INVALID
 
         if isinstance(value, Model):
             value.validate()
 
     def to_dict(self, value):
-        return dict(value) if isinstance(value, Model) else value
+        return dict(value)
+
+    def from_dict(self, value):
+        if value is None or self.model_class is None:
+            return value
+
+        return self.model_class(**value)

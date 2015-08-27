@@ -154,7 +154,7 @@ def test_list_invalid_1():
 def test_list_invalid_2():
     """List contains invalid values"""
 
-    test_list = List(inner=String())
+    test_list = List(property_class=String())
 
     with assert_raises(InvalidPropertyError) as cm:
         test_list.validate([3, 5])
@@ -185,7 +185,7 @@ def test_list_valid_1():
 def test_list_valid_2():
     """Should be ok"""
 
-    test_list = List(inner=String(validators=[min_length(3)]))
+    test_list = List(property_class=String(validators=[min_length(3)]))
     test_list.validate(['abcdef'])
 
     assert True
@@ -277,11 +277,11 @@ class BlogPost(Model):
     published = Boolean()
     likes = Integer(required=False)
     category = String(required=False)
-    tags = List(inner=String(validators=[min_length(3)]), error_key='category')
-    author = Object(object_class=Author)
+    tags = List(property_class=String(validators=[min_length(3)]), error_key='category')
+    author = Object(model_class=Author)
     created_on = DateTime(default=datetime.now)
     updated_on = DateTime(default=datetime.now)
-    revisions = List(required=False, inner=Object(object_class=Revision))
+    revisions = List(required=False, property_class=Object(model_class=Revision))
 
     @model_validator(error_key='category')
     def category_or_tags(self):
@@ -353,4 +353,29 @@ def test_model_to_dict():
     # Check an object
     assert 'author' in test_blog_spot_dict
     assert isinstance(test_blog_spot_dict['author'], dict)
+
+
+def test_model_from_dict():
+    """Test model instantiation through the froM_dict() method."""
+
+    test_blog_spot_data = dict(title=u'Hello world !', tags=[u'foo', u'bar'], published=True, likes=8,
+                              meta_data={'corrector': 'Pierre', 'reviewer': 'Moinax'}, author=dict(name='Pierre'),
+                              revisions=[dict(), dict()])
+    test_blog_spot = BlogPost.from_dict(test_blog_spot_data)
+
+    assert isinstance(test_blog_spot, BlogPost)
+
+    # Check a string
+    assert hasattr(test_blog_spot, 'title'), test_blog_spot
+    assert isinstance(test_blog_spot.title, unicode)
+
+    # Check a list
+    assert hasattr(test_blog_spot, 'revisions')
+    assert isinstance(test_blog_spot.revisions, list)
+    for revision in test_blog_spot.revisions:
+        assert isinstance(revision, Revision)
+
+    # Check an object
+    assert hasattr(test_blog_spot, 'author')
+    assert isinstance(test_blog_spot.author, Author)
 

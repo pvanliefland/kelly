@@ -89,3 +89,23 @@ class Model(BaseModel):
             casted.append((property_name, property_instance.to_dict(getattr(self, property_name))))
 
         return iter(casted)
+
+    @classmethod
+    def from_dict(cls, dct):
+        """Factory method to handle dict model data.
+        Useful to instantiate a model previously casted to dict.
+
+        > blog_post = BlogPost(title="Hello World!")
+        > blog_post_dict = dict(blog_post)
+        > restored_blog_post = BlogPost.from_dict(blog_post_dict)
+
+        :type cls: Model
+        :type dct: dict
+        """
+
+        casted = {}
+
+        for property_name, property_instance in cls._model_properties.iteritems():
+            casted[property_name] = property_instance.from_dict(dct.get(property_name))
+
+        return cls(**casted)
