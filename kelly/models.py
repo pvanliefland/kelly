@@ -40,11 +40,11 @@ class Model(BaseModel):
         model_instance = super(Model, cls).__new__(cls)
 
         # Loop over properties and fetch a value (provided or default)
-        for property_name in cls._model_properties:
+        for property_name, property_instance in cls._model_properties.iteritems():
             if property_name in kwargs:
                 property_value = kwargs.pop(property_name)
             else:
-                property_value = cls._model_properties[property_name].default_value
+                property_value = property_instance.default_value
 
             setattr(model_instance, property_name, property_value)
 
