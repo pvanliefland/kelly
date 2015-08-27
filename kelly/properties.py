@@ -32,6 +32,15 @@ class Property(BaseProperty):
         self.validators = validators if validators is not None else []
         self.error_key = error_key
 
+    def process_value(self, value):
+        """Override this method in a child class to process values.
+        This processing is done when setting a property on a model.
+
+        :param value
+        """
+
+        return value
+
     def validate(self, value):
         """Validate the property against the provided value
 
@@ -97,7 +106,18 @@ class Integer(Property):
 
 
 class DateTime(Property):
-    """DateTime property"""
+    def __init__(self, include_microseconds=True, **kwargs):
+        """Class constructor
+
+        :param include_microseconds: whether to keep track of microseconds or not
+        """
+
+        super(DateTime, self).__init__(**kwargs)
+
+        self.include_microseconds = include_microseconds
+
+    def process_value(self, value):
+        return value.replace(microsecond=0) if not self.include_microseconds else value
 
     def _do_validate(self, value):
         assert isinstance(value, datetime), ERROR_INVALID

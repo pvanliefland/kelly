@@ -21,10 +21,13 @@ class ModelMeta(type):
         if BaseModel not in bases:  # We don't want to call __model_init__ when building Model itself
             cls._model_properties = {}
             cls._model_validators = []
-            cls.__model_init__.im_func(cls, dct)
 
+            # Parse properties for the model class itself (those do not include parent classes properties)
+            cls.__model_init__.im_func(cls, None, dct)
+
+            # Parse properties for the base classes (if they are proper Kelly models)
             for base in [base for base in bases if issubclass(base, Model) and not base is Model]:
-                base.__model_init__.im_func(cls, dict(base.__dict__))
+                base.__model_init__.im_func(cls, base, base._model_properties)
 
         return cls
 
@@ -35,14 +38,18 @@ class Model(BaseModel):
     __metaclass__ = ModelMeta
 
     @classmethod
-    def __model_init__(cls, dct):
+    def __model_init__(cls, base, dct):
         """Initialize the model class"""
 
-        for member_name, member_value in dct.items():
-            if isinstance(member_value, BaseProperty):  # Properties setup
-                cls._model_properties[member_name] = member_value
-            elif isinstance(member_value, ModelValidator):  # Model validators setup
-                cls._model_validators.append(member_value)
+        for candidate_name, candidate_value in dct.items():
+            if isinstance(candidate_value, BaseProperty):  # Properties setup
+                cls._model_properties[candidate_name] = candidate_value
+                if base is None:
+                    delattr(cls, candidate_name)
+            elif isinstance(candidate_name, ModelValidator):  # Model validators setup
+                cls._model_validators.append(candidate_value)
+                if base is None:
+                    delattr(cls, candidate_name)
 
     def __new__(cls, **kwargs):
         """Provide a default constructor to model classes"""
@@ -99,6 +106,18 @@ class Model(BaseModel):
             casted.append((property_name, property_instance.to_dict(getattr(self, property_name))))
 
         return iter(casted)
+
+    def __setattr__(self, name, value):
+        """Some properties may choose to transform the value provided to them.
+
+        :param name
+        :param value
+        """
+
+        if name in self._model_properties:
+            value = self._model_properties[name].process_value(value)
+
+        return super(Model, self).__setattr__(name, value)
 
     @classmethod
     def from_dict(cls, dct):

@@ -141,13 +141,34 @@ def test_datetime_invalid():
     assert cm.exception.error == 'invalid'
 
 
-def test_datetime_valid():
-    """Should be ok"""
+def test_datetime_valid_1():
+    """Should be ok (with microseconds)"""
 
-    test_datetime = DateTime()
-    test_datetime.validate(datetime.now())
+    last_order_property = DateTime()
+    last_order_property.validate(datetime.now())
 
-    assert True
+    class Bar(Model):
+        last_order = last_order_property
+
+    now = datetime.now().replace(microsecond=123456)
+    some_bar = Bar(last_order=now)
+
+    assert some_bar.last_order.microsecond == 123456
+
+
+def test_datetime_valid_1():
+    """Should be ok (without microseconds)"""
+
+    last_order_property = DateTime(include_microseconds=False)
+    last_order_property.validate(datetime.now())
+
+    class Bar(Model):
+        last_order = last_order_property
+
+    now = datetime.now().replace(microsecond=123456)
+    some_bar = Bar(last_order=now)
+
+    assert some_bar.last_order.microsecond == 0
 
 
 def test_list_invalid_1():
