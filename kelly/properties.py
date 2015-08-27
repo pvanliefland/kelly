@@ -180,10 +180,13 @@ class Object(Property):
             value.validate()
 
     def to_dict(self, value):
+        if value is None:
+            return None
+
         return dict(value)
 
     def from_dict(self, value):
-        if value is None or self.model_class is None:
-            return value
+        if value is None:
+            return None
 
         return self.model_class(**value)
