@@ -117,6 +117,9 @@ class DateTime(Property):
         self.include_microseconds = include_microseconds
 
     def process_value(self, value):
+        if value is None:
+            return None
+
         return value.replace(microsecond=0) if not self.include_microseconds else value
 
     def _do_validate(self, value):
