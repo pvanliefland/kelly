@@ -10,6 +10,7 @@ Property classes.
 
 from datetime import datetime
 from errors import ERROR_INVALID, ERROR_REQUIRED, InvalidPropertyError
+from kelly.errors import CannotSetPropertyError
 from validators import regex
 from base import Model as BaseModel, Property as BaseProperty
 from copy import copy
@@ -235,7 +236,15 @@ class Constant(Property):
         self.value = value
 
     def process_value(self, value):
-        raise ValueError('Cannot set value of Constant properties')
+        """Constant values are... constant
+
+        :param value
+        """
+
+        if value != self.value:
+            raise CannotSetPropertyError('Cannot set value of Constant properties')
+
+        return value
 
     @property
     def default(self):

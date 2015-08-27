@@ -13,6 +13,7 @@ from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Objec
     InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
+from kelly.errors import CannotSetPropertyError
 from kelly.properties import Constant
 
 
@@ -373,7 +374,7 @@ def test_constant_invalid_2():
     class Foo(Model):
         bar = test_constant
 
-    with assert_raises(ValueError):
+    with assert_raises(CannotSetPropertyError):
         Foo(bar=2)
 
 
