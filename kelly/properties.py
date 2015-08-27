@@ -10,7 +10,7 @@ Property classes.
 
 from datetime import datetime
 from errors import ERROR_INVALID, ERROR_REQUIRED, InvalidPropertyError
-from kelly.errors import CannotSetPropertyError
+from kelly.errors import CannotSetPropertyError, InvalidModelError
 from validators import regex
 from base import Model as BaseModel, Property as BaseProperty
 from copy import copy
@@ -168,7 +168,7 @@ class List(Property):
         if value is None or self.property_class is None:
             return value
 
-        return [self.property_class.model_class(**item) if isinstance(item, dict) else item for item in value]
+        return [self.property_class.model_class.from_dict(item) if isinstance(item, dict) else item for item in value]
 
 
 class Dict(Property):
@@ -212,7 +212,10 @@ class Object(Property):
         assert isinstance(value, self.model_class), ERROR_INVALID
 
         if isinstance(value, BaseModel):
-            value.validate()
+            try:
+                value.validate()
+            except InvalidModelError:
+                raise AssertionError(ERROR_INVALID)
 
     def to_dict(self, value):
         if value is None:
@@ -231,7 +234,7 @@ class Constant(Property):
     """Constant property"""
 
     def __init__(self, value, **kwargs):
-        super(Constant, self).__init__(**kwargs)
+        super(Constant, self).__init__(required=False, **kwargs)
 
         self.value = value
 
