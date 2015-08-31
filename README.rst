@@ -1,4 +1,4 @@
-Kelly: a simple domain object and validation library
-====================================================
+Kelly: A simple object modeling and validation library
+======================================================
 
 TBC
