@@ -143,32 +143,32 @@ class Uuid(String):
 class List(Property):
     """String property"""
 
-    def __init__(self, property_class=None, **kwargs):
+    def __init__(self, property=None, **kwargs):
         super(List, self).__init__(**kwargs)
 
-        self.property_class = property_class
+        self.property = property
 
     def _do_validate(self, value):
         assert isinstance(value, list), ERROR_INVALID
 
-        if self.property_class is not None:
+        if self.property is not None:
             try:
                 for single_value in value:
-                    self.property_class.validate(single_value)
+                    self.property.validate(single_value)
             except AssertionError:
                 raise AssertionError(ERROR_INVALID)
 
     def to_dict(self, value):
-        if value is None or self.property_class is None:
+        if value is None or self.property is None:
             return value
 
         return [dict(item) if isinstance(item, BaseModel) else item for item in value]
 
     def from_dict(self, value):
-        if value is None or self.property_class is None:
+        if value is None or self.property is None:
             return value
 
-        return [self.property_class.model_class.from_dict(item) if isinstance(item, dict) else item for item in value]
+        return [self.property.from_dict(item) if isinstance(item, dict) else item for item in value]
 
 
 class Dict(Property):

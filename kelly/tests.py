@@ -187,7 +187,7 @@ def test_list_invalid_1():
 def test_list_invalid_2():
     """List contains invalid values"""
 
-    test_list = List(property_class=String())
+    test_list = List(property=String())
 
     with assert_raises(InvalidPropertyError) as cm:
         test_list.validate([3, 5])
@@ -218,7 +218,7 @@ def test_list_valid_1():
 def test_list_valid_2():
     """Should be ok"""
 
-    test_list = List(property_class=String(validators=[min_length(3)]))
+    test_list = List(property=String(validators=[min_length(3)]))
     test_list.validate(['abcdef'])
 
     assert True
@@ -228,7 +228,7 @@ def test_list_default_mutable():
     """Mutating the property default value after providing it should not result in an altered default"""
 
     default_list = []
-    test_list = List(property_class=String(), default_value=default_list)
+    test_list = List(property=String(), default_value=default_list)
 
     default_list.append('foo')
 
@@ -405,11 +405,11 @@ class BlogPost(Model):
     published = Boolean()
     likes = Integer(required=False)
     category = String(required=False)
-    tags = List(property_class=String(validators=[min_length(3)]), error_key='category')
+    tags = List(property=String(validators=[min_length(3)]), error_key='category')
     author = Object(model_class=Author)
     created_on = DateTime(default_value=datetime.now)
     updated_on = DateTime(default_value=datetime.now)
-    revisions = List(required=False, property_class=Object(model_class=Revision))
+    revisions = List(required=False, property=Object(model_class=Revision))
 
     @model_validator(error_key='category')
     def category_or_tags(self):
