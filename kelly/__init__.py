@@ -9,6 +9,6 @@ The Kelly library allows you to model your domain objects in a declarative, pure
 """
 
 from models import Model
-from properties import String, Integer, DateTime, Uuid, List, Dict, Boolean, Object, Constant
+from properties import Property, String, Integer, DateTime, Uuid, List, Dict, Boolean, Object, Constant
 from validators import choices, min_length, max_length, regex, model_validator
 from errors import *
