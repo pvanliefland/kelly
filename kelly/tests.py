@@ -388,6 +388,18 @@ def test_constant_valid_1():
     assert test_constant.default == 1
 
 
+def test_property_context():
+    """Test context-aware property validators"""
+
+    test_property = String(validators=[min_length(2, context='foo')])
+
+    test_property.validate('a')
+    test_property.validate('ab', context='foo')
+
+    with assert_raises(InvalidPropertyError):
+        test_property.validate('a', context='foo')
+
+
 class Author(Model):
     name = String()
 
@@ -395,6 +407,10 @@ class Author(Model):
 class Revision(Model):
     id = Uuid(default_value=uuid4)
     changes = String(default_value='Fake changes LOL')
+
+
+class Animal(Model):
+    name = String(validators=[min_length(5, context='colloquial'), min_length(10, context='academic')])
 
 
 class BlogPost(Model):
@@ -507,6 +523,7 @@ def test_model_from_dict():
     assert hasattr(test_blog_spot, 'author')
     assert isinstance(test_blog_spot.author, Author)
 
+
 def test_model_inheritance():
     """Hilarious blog posts have 13 properties"""
 
@@ -514,3 +531,18 @@ def test_model_inheritance():
         lol = String()
 
     assert len(HilariousBlogPost._model_properties) == 13
+
+
+def test_model_context():
+    """Test context-aware model validation"""
+
+    test_animal_1 = Animal(name='Hippo')
+    test_animal_1.validate()
+
+    with assert_raises(InvalidModelError):
+        test_animal_1.validate(context='academic')
+
+    test_animal_2 = Animal(name='Hippopotamidae')
+    test_animal_2.validate()
+    test_animal_2.validate(context='academic')
+    test_animal_2.validate(context='unknown context')

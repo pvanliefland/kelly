@@ -71,8 +71,11 @@ class Model(BaseModel):
 
         return model_instance
 
-    def validate(self):
-        """Validate the model"""
+    def validate(self, context=None):
+        """Validate the model
+
+        :param context: an arbitrary validation context (any string will do)
+        """
 
         errors = {}
 
@@ -81,14 +84,14 @@ class Model(BaseModel):
             property_value = getattr(self, property_name)
 
             try:
-                property_instance.validate(property_value)
+                property_instance.validate(property_value, context)
             except InvalidPropertyError as e:
                 error_key = property_instance.error_key if property_instance.error_key is not None else property_name
                 errors[error_key] = e.error
 
         # Call model validators
         for validator in self._model_validators:
-            if validator.error_key not in errors:
+            if validator.context is None or context == validator.context or validator.error_key not in errors:
                 try:
                     validator(self)
                 except AssertionError as e:

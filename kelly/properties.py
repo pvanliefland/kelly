@@ -42,10 +42,11 @@ class Property(BaseProperty):
 
         return value
 
-    def validate(self, value):
+    def validate(self, value, context=None):
         """Validate the property against the provided value
 
         :param value
+        :param context: an arbitrary validation context (any string will do)
         """
 
         try:
@@ -53,7 +54,7 @@ class Property(BaseProperty):
                 assert value is not None, ERROR_REQUIRED
             elif value is not None:
                 self._do_validate(value)
-                for validator in self.validators:
+                for validator in filter(lambda v: v.context is None or v.context == context, self.validators):
                     validator(value)
         except AssertionError as e:
             raise InvalidPropertyError(e.message)
