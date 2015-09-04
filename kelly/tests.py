@@ -400,6 +400,17 @@ def test_property_context():
         test_property.validate('a', context='foo')
 
 
+def test_property_required_context():
+    """Test context-aware property validators"""
+
+    test_property = String(required=lambda c: c == 'foo')
+
+    test_property.validate(None)
+
+    with assert_raises(InvalidPropertyError):
+        test_property.validate(None, context='foo')
+
+
 class Author(Model):
     name = String()
 

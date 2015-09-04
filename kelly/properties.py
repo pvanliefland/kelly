@@ -22,8 +22,9 @@ class Property(BaseProperty):
     def __init__(self, required=True, default_value=None, validators=None, error_key=None):
         """Class constructor
 
-        :param required
-        :param default
+        :param required: True, False, or a callable that takes a context as argument
+        :type required: bool | callable
+        :param default_value
         :param validators
         :param error_key
         """
@@ -50,7 +51,12 @@ class Property(BaseProperty):
         """
 
         try:
-            if value is None and self.required:
+            required = self.required(context)
+        except TypeError:
+            required = self.required
+
+        try:
+            if value is None and required:
                 assert value is not None, ERROR_REQUIRED
             elif value is not None:
                 self._do_validate(value)
