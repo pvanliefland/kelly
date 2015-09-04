@@ -42,7 +42,7 @@ class Model(BaseModel):
                 cls._model_properties[candidate_name] = candidate_value
                 if delete_attr:
                     delattr(cls, candidate_name)
-            elif isinstance(candidate_name, ModelValidator):  # Model validators setup
+            elif isinstance(candidate_value, ModelValidator):  # Model validators setup
                 cls._model_validators.append(candidate_value)
                 if delete_attr:
                     delattr(cls, candidate_name)
