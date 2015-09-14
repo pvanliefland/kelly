@@ -138,6 +138,7 @@ class Model(BaseModel):
         casted = {}
 
         for property_name, property_instance in cls._model_properties.iteritems():
-            casted[property_name] = property_instance.from_dict(dct.get(property_name))
+            if property_name in dct:
+                casted[property_name] = property_instance.from_dict(dct[property_name])
 
         return cls(**casted)
