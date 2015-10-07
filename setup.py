@@ -27,7 +27,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/pvanliefland/kelly',
+    url='https://github.com/youhaveajack/kelly',
 
     # Author details
     author='Pierre Vanliefland',
