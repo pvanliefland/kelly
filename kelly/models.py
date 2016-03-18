@@ -18,12 +18,26 @@ class ModelMeta(type):
 
     def __new__(mcs, name, bases, dct):
         cls = type.__new__(mcs, name, bases, dct)
-        if BaseModel not in bases:  # We don't want to call __model_init__ when building Model itself
+
+        if BaseModel not in bases:  # No need to parse properties / validators on model class itself
             cls._model_properties = {}
             cls._model_validators = []
 
-            # Parse properties for the model class itself (those do not include parent classes properties)
-            cls.__model_init__.im_func(cls, bases, dct)
+            # First, fetch model properties and model validators from base classes
+            for base in bases:
+                if hasattr(base, '_model_properties'):
+                    cls._model_properties.update(base._model_properties)
+                if hasattr(base, '_model_validators'):
+                    cls._model_validators.extend(base._model_validators)
+
+            # Then, parse properties for the model class itself
+            for candidate_name, candidate_value in dct.items():
+                if isinstance(candidate_value, BaseProperty):  # Properties setup
+                    cls._model_properties[candidate_name] = candidate_value
+                    delattr(cls, candidate_name)
+                elif isinstance(candidate_value, ModelValidator):  # Model validators setup
+                    cls._model_validators.append(candidate_value)
+                    delattr(cls, candidate_name)
 
         return cls
 
@@ -32,24 +46,6 @@ class Model(BaseModel):
     """Base model class"""
 
     __metaclass__ = ModelMeta
-
-    @classmethod
-    def __model_init__(cls, bases, dct, delete_attr=True):
-        """Initialize the model class"""
-
-        for candidate_name, candidate_value in dct.items():
-            if isinstance(candidate_value, BaseProperty):  # Properties setup
-                cls._model_properties[candidate_name] = candidate_value
-                if delete_attr:
-                    delattr(cls, candidate_name)
-            elif isinstance(candidate_value, ModelValidator):  # Model validators setup
-                cls._model_validators.append(candidate_value)
-                if delete_attr:
-                    delattr(cls, candidate_name)
-
-        # Parse properties for the base classes (if they are proper Kelly models)
-        for base in [base for base in bases if issubclass(base, Model) and not base is Model]:
-            base.__model_init__.im_func(cls, base.__bases__, base._model_properties, False)
 
     def __new__(cls, **kwargs):
         """Provide a default constructor to model classes"""

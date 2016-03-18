@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 """
-kelly.tests
-~~~~~~~~~~~
+kelly.tests.test_basic
+~~~~~~~~~~~~~~~~~~~~~~
 
-Unit tests.
+Basic feature tests.
 
 """
 
 from uuid import uuid4
-from . import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
+from kelly import Model, String, Integer, Uuid, DateTime, List, Dict, Boolean, Object, InvalidModelError, \
     InvalidPropertyError, min_length, max_length, regex, choices, ERROR_REQUIRED, model_validator
 from nose.tools import assert_raises
 from datetime import datetime
