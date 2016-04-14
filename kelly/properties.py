@@ -213,10 +213,10 @@ class Object(Property):
     def __init__(self, model_class, **kwargs):
         super(Object, self).__init__(**kwargs)
 
-        self.model_class = model_class
+        self._model_class = model_class
 
     def _do_validate(self, value):
-        assert isinstance(value, self.model_class), ERROR_INVALID
+        assert isinstance(value, self._model_class), ERROR_INVALID
 
         if isinstance(value, BaseModel):
             try:
@@ -234,7 +234,16 @@ class Object(Property):
         if value is None:
             return None
 
-        return self.model_class(**value)
+        return self.model_class(value)(**value)
+
+    def model_class(self, value):
+        """Override in child classes if you need something more flexible, such as a model class that varies depending
+        on the value.
+
+        :param value
+        """
+
+        return self._model_class
 
 
 class Constant(Property):
@@ -262,8 +271,3 @@ class Constant(Property):
 
     def _do_validate(self, value):
         assert value == self.value, ERROR_INVALID
-
-
-
-
-
