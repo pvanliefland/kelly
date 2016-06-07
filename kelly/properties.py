@@ -234,7 +234,7 @@ class Object(Property):
         if value is None:
             return None
 
-        return self.model_class(value)(**value)
+        return self.model_class(value).from_dict(value)
 
     def model_class(self, value):
         """Override in child classes if you need something more flexible, such as a model class that varies depending
